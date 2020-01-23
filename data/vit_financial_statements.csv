@@ -1,0 +1,3 @@
+id,name,code,parent_id.id,criteria,source,level
+1,Profit and Loss,Pal,,,header,0
+2,Balance Sheet,BS,,,header,0

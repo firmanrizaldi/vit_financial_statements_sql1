@@ -1,0 +1,92 @@
+<odoo>
+    <data>
+        <template id="vit_financial_statements.index" name="index">
+            <t t-call="website.layout">
+                
+                <t t-call="vit_financial_statements.file_form"/>
+
+
+                <!-- <h2>Financial Statements</h2> -->
+                <div style="margin:20px 0;"></div>
+                <div class="easyui-layout" style="width:100%;height:100%; min-height: 500px">
+
+                   
+                        <t t-call="vit_financial_statements.file_browser"/>
+
+
+                </div>
+                <script type="text/javascript">
+                        function doSearch(){
+                            $('#tt').treegrid('load',{
+                                company_id: $('#company_id').val(),
+                                report_id: $('#report_id').val(),
+                                date_start: $('#date_start').val(),
+                                date_end: $('#date_end').val()
+                            });
+                        }
+
+                        function expandAll(){
+                            $('#tt').treegrid('expandAll');
+                        }
+                            
+
+                </script>
+            </t>
+         </template>
+
+        <template id="vit_financial_statements.file_browser">
+             <table id="tt" class="easyui-treegrid" style="width:100%;height:100%"
+                    data-options="
+                        url: '/financial/data',
+                        method: 'get',
+                        rownumbers: false,
+                        idField: 'id',
+                        treeField: 'name' ">
+                 <thead>
+                     <tr>
+                        <th data-options="field:'name'" width="80%">Name</th>
+                        <th data-options="field:'balance'" width="20%">Balance</th>
+                     </tr>
+                 </thead>
+
+             </table>
+        </template>
+        <template id="vit_financial_statements.file_form">
+     
+                    <div style="margin:20px;" class="d-flex justify-content-center">
+                        <input class="easyui-datebox" label="&#160;Start Date:" style="width:20%;" id="date_start" required="1"/>
+                        <input class="easyui-datebox" label="&#160;End Date:" style="width:20%;" id="date_end" required="1"/>
+                        <input field="company" class="easyui-combotree" data-options="
+                            url:'/financial/company',
+                            method:'get',
+                            idField: 'company_id',
+                            textField:'name',
+                            required:true,
+                            label:'&#160;Company :'
+                            " 
+                            
+                            style="width:20%" id="company_id"/>
+
+                        <input field="report" class="easyui-combotree" data-options="
+                            url:'/financial/report',
+                            method:'get',
+                            valueField:'id',
+                            idField: 'report_id',
+                            textField:'name',
+                            required:true,
+                            label:'&#160;Report :'" style="width:20%" id="report_id"/>
+
+                        
+                    </div>
+                    <div style="margin:20px ;" class="d-flex justify-content-center">
+                        <button type="button" class="btn btn-primary" style="margin:20px;" onclick="doSearch()">Search</button>
+                        <button type="button" class="btn btn-info" style="margin:20px;" onclick="expandAll()">Expand All</button>
+                        <button type="button" class="btn btn-success" style="margin:20px;" onclick="print()">Print</button>
+                    </div>
+               
+        </template>
+
+
+
+    </data>
+</odoo>

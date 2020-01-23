@@ -1,0 +1,7 @@
+id,name,code,parent_id.id,criteria,source,level
+3,Sales,sale,1,4-%,account,1
+4,COGS,HPP,1,5-1%,account,1
+5,GROSS PROFIT,GROSS,1,SALE - HPP,formula,1
+6,Biaya Administrasi,ADM,1,6-%,account,1
+7,Pendapatan lain-lain,OTHER,1,8-%,account,1
+8,Net Pisa,NP,1,GROSS - ADM + OTHER,formula,1

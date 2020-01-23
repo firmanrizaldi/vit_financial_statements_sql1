@@ -1,0 +1,88 @@
+<odoo>
+    <data>
+
+        <record id="financial_statement_view_tree" model="ir.ui.view">
+          <field name="name">vit_financial_statements.view.tree</field>
+          <field name="model">vit_financial_statements</field>
+          <field name="arch" type="xml">
+            <tree>
+              <field name="name"/>
+              <field name="code"/>
+              <field name="criteria"/>
+              <field name="source"/>
+            </tree>
+          </field>
+        </record>
+
+        
+        <record id="financial_statement_view_form" model="ir.ui.view">
+          <field name="name">vit_financial_statements.view.form</field>
+          <field name="model">vit_financial_statements</field>
+          <field name="arch" type="xml">
+            <form string="Financial Report">
+              <sheet>
+                <div class="oe_title">
+                          <label for="name" class="oe_edit_only" string="Report Name"/>
+                          <h1><field name="name"/></h1>
+                </div>
+                <group>
+                  <group>
+                    <field name="code"/>
+                    <field name="parent_id"/>
+                    <field name="criteria"/>
+                  </group>
+                  <group>
+                    <field name="source"/>
+                    <field name="level"/>
+                  </group>
+                </group>
+              </sheet>
+            </form>
+          </field>
+        </record>
+
+        <record id="financial_statement_search" model="ir.ui.view">
+            <field name="name">financial statement</field>
+            <field name="model">vit_financial_statements</field>
+            <field name="arch" type="xml">
+                <search string="Financial Report">
+                  <field name="name"/>
+                  <field name="criteria"/>
+                  <field name="source"/>
+                  <group expand="1" string="Group By">
+                      <filter string="Report Name" name="name" domain="[]"
+                              context="{'group_by':'name'}"/>
+                      <filter string="Criteria" name="criteria" domain="[]"
+                              context="{'group_by':'criteria'}"/>
+                      <filter string="Source" name="source" domain="[]"
+                              context="{'group_by':'source'}"/>
+                  </group>  
+                </search>
+            </field>
+        </record>
+    
+        <record id="action_financial" model="ir.actions.act_window">
+            <field name="name">Financial Report</field>
+            <field name="res_model">vit_financial_statements</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                Click to add a Financial Reports
+                </p>
+                <p>klik tombol create untuk bikin Financial Reports baru</p>
+            </field>
+        </record>
+
+        <menuitem id="financial_report_0"
+            name="Financial Report"
+            sequence="20"/>
+            
+        <menuitem id="financial_report_1"
+            name="Financial Report"
+            parent="financial_report_0"
+            action="action_financial"
+            sequence="20"/>
+
+
+    </data>
+</odoo>
