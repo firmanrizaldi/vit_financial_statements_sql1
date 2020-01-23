@@ -103,7 +103,7 @@ class financialStatement(http.Controller):
                 aat.name,
                 aa.id,
                 aa.name,
-                aa.code,
+                aa.code as code_account,
                 case 
                 when aat.name in ('Income','Other Income','Equity','Payable','Credit Card','Current Liabilities','Non-current Liabilities') then
                     sum(coalesce(aml.credit,0) - coalesce(aml.debit,0)) 
@@ -153,6 +153,13 @@ class financialStatement(http.Controller):
         id_first = []
         data = []
         children = []
+        balance_master = 0
+        balance_sale = 0
+        balance_cogs = 0
+        balance_gross = 0
+        balance_adm = 0
+        balance_other = 0
+        
         # i = 0
         # m = -1
         for dir in result:
@@ -167,18 +174,31 @@ class financialStatement(http.Controller):
           
           if id_first != dir['id_first'] :
             balance_first = dir['balance'] == 0
+            if dir['code'] == "GROSS" :
+              balance_gross = balance_sale - balance_cogs
+              balance = balance_sale - balance_cogs
+            elif dir['code'] == "NP" :
+              balance = balance_gross - balance_adm + balance_other
+            else :
+              balance = dir['balance']
+                
             if balance_first :
+              
               data.append({
                 'id': dir['id_first'],
                 'name': dir['parent_name'],
-                'balance' : dir['balance'],
+                'code' : dir['code'],
+                'source' : dir['source'],
+                'balance' : balance
               })
               data_master = []
             else :
               data.append({
                 'id': dir['id_first'],
                 'name': dir['parent_name'],
-                'balance' : dir['balance'],
+                'code' : dir['code'],
+                'source' : dir['source'],
+                'balance' : balance,
                 'children' : children
               })
             id_first = dir['id_first']
@@ -188,6 +208,7 @@ class financialStatement(http.Controller):
             lendata = len(data)
             
           elif id_first == dir['id_first'] and dir['balance'] != 0:
+            balance_master = dir['balance']
             if balance_first :
               if data_master == [] :
               
@@ -196,17 +217,32 @@ class financialStatement(http.Controller):
                     data_master.append({
                                   "id" : x['id'],
                                   "name" : x['name'],
-                                  "balance" : x['balance'],
+                                  'code' : dir['code'],
+                                  'source' : x['source'],
+                                  "balance" : balance_master,
                                   "children" : children
                                   })
-                 
+                    # balance_masterdir['balance'] = 0
                 data[lendata_minus:lendata] = data_master
               else :
-                plus = [list(d.values())[3] for d in data[lendata_minus:lendata]]
+                plus = [list(d.values())[5] for d in data[lendata_minus:lendata]]
                 plus.append(children)
               
                 for x in data[lendata_minus:lendata] :
                     x['children'] = plus
+                    x['balance'] = x['balance'] + balance_master
+                    
+                    if x['code'] == 'sale' :
+                      balance_sale = x['balance'] + balance_master
+                    elif x['code'] == 'HPP' :
+                      balance_cogs = x['balance'] + balance_master
+                    elif x['code'] == 'ADM' :
+                      balance_adm = x['balance'] + balance_master
+                    elif x['code'] == 'OTHER':
+                      balance_other = x['balance'] + balance_master
+                    else :
+                      balance = x['balance']
+                    
                 
           
           
