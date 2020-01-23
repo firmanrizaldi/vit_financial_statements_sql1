@@ -153,12 +153,11 @@ class financialStatement(http.Controller):
         id_first = []
         data = []
         children = []
-        # datas = []
-        i = 0
-        m = -1
+        # i = 0
+        # m = -1
         for dir in result:
-          i += 1
-          m += 1
+          # i += 1
+          # m += 1
           
           children = ({
             'id': dir['id_first'],
@@ -174,6 +173,7 @@ class financialStatement(http.Controller):
                 'name': dir['parent_name'],
                 'balance' : dir['balance'],
               })
+              data_master = []
             else :
               data.append({
                 'id': dir['id_first'],
@@ -189,36 +189,28 @@ class financialStatement(http.Controller):
             
           elif id_first == dir['id_first'] and dir['balance'] != 0:
             if balance_first :
-              datas = []
-              id_childd = []
-              for x in data[lendata_minus:lendata] :
-                  datas.append({
-                                "id" : x['id'],
-                                "name" : x['name'],
-                                "balance" : x['balance'],
-                                "children" : children
-                                })
-                  
-                  id_childd = x['id']
-              data[lendata_minus:lendata] = datas
+              if data_master == [] :
               
-              plus = [list(d.values())[3] for d in data[lendata_minus:lendata]]
-              plus.append(children)
+                data_master = []
+                for x in data[lendata_minus:lendata] :
+                    data_master.append({
+                                  "id" : x['id'],
+                                  "name" : x['name'],
+                                  "balance" : x['balance'],
+                                  "children" : children
+                                  })
+                 
+                data[lendata_minus:lendata] = data_master
+              else :
+                plus = [list(d.values())[3] for d in data[lendata_minus:lendata]]
+                plus.append(children)
               
-              for x in data[lendata_minus:lendata] :
-                  x['children'] = plus
+                for x in data[lendata_minus:lendata] :
+                    x['children'] = plus
                 
           
           
         return simplejson.dumps(data)
 
 
-          
-          
-            # else :
-            #   plus = [list(d.values())[3] for d in data[lendata_minus:lendata]]
-
-            #   plus.append(children)
-            #   for x in data[lendata_minus:lendata] :
-            #       x['children'] = plus
             
