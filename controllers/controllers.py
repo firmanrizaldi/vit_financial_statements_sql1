@@ -150,103 +150,269 @@ class financialStatement(http.Controller):
         cr.execute(sql,(report_id, company_id, date_start, date_end))
         result = cr.dictfetchall()
    
-        id_first = []
+        id_menu = 0
+        id_submenu = 0
         data = []
+        data_master = []
+        data_sub_master = []
+        data_sub_master_level1 = []
         children = []
-        balance_master = 0
-        balance_sale = 0
-        balance_cogs = 0
-        balance_gross = 0
-        balance_adm = 0
-        balance_other = 0
-        
+        # balance_master = 0
+        # balance_sale = 0
+        # balance_cogs = 0
+        # balance_gross = 0
+        # balance_adm = 0
+        # balance_other = 0
+        lendata = 0
+        lendata_minus = 0
         # i = 0
         # m = -1
         for dir in result:
           # i += 1
           # m += 1
+          lendata_minus = len(data) -1
+          lendata = len(data)    
           
-          children = ({
-            'id': dir['id_first'],
-            'name': dir['name'],
-            'balance' : dir['balance']
-          })
-          
-          if id_first != dir['id_first'] :
-            balance_first = dir['balance'] == 0
-            if dir['code'] == "GROSS" :
-              balance_gross = balance_sale - balance_cogs
-              balance = balance_sale - balance_cogs
-            elif dir['code'] == "NP" :
-              balance = balance_gross - balance_adm + balance_other
-            else :
-              balance = dir['balance']
+# //////////////////////// masukin level 1 ==== sales,cogs,dll
+          if dir['level'] == 1 :
+            
+            if id_menu != dir['id_first'] :
+              if dir ['balance'] == 0 :
+                data.append({
+                      'id': dir['id_first'],
+                      'name': dir['parent_name'],
+                      'code' : dir['code'],
+                      'source' : dir['source'],
+                      'balance' : dir['balance']
+                    })
+                data_sub_master_level1 = []
+              else :
+                data.append({
+                  'id': dir['id_first'],
+                  'name': dir['parent_name'],
+                  'code' : dir['code'],
+                  'source' : dir['source'],
+                  'balance' : dir['balance'],
+                  'children' : ({
+                        'id': dir['id_first'],
+                        'name': dir['name'],
+                        'code' : dir['code'],
+                        'balance' : dir['balance'],
+                        'source' : dir['source'],               
+                    })
+                })
                 
-            if balance_first :
-              
-              data.append({
-                'id': dir['id_first'],
-                'name': dir['parent_name'],
-                'code' : dir['code'],
-                'source' : dir['source'],
-                'balance' : balance
-              })
-              data_master = []
             else :
-              data.append({
-                'id': dir['id_first'],
-                'name': dir['parent_name'],
-                'code' : dir['code'],
-                'source' : dir['source'],
-                'balance' : balance,
-                'children' : children
-              })
-            id_first = dir['id_first']
-              
-            
-            lendata_minus = len (data) -1
-            lendata = len(data)
-            
-          elif id_first == dir['id_first'] and dir['balance'] != 0:
-            balance_master = dir['balance']
-            if balance_first :
+              if dir ['balance'] != 0 : 
+                
+                if id_menu == dir['id_first']:
+                  if data_sub_master_level1 == [] :
+                    data_sub_master_level1 = []
+                    for x in data[lendata_minus:lendata] :
+                        data_sub_master_level1.append({
+                                      "id" : x['id'],
+                                      "name" : x['name'],
+                                      'code' : x['code'],
+                                      'source' : x['source'],
+                                      "balance" : x['balance'],
+                                      "children" : ({
+                                        'id': dir['id_first'],
+                                        'name': dir['name'],
+                                        'code' : dir['code'],
+                                        'balance' : dir['balance'],
+                                        'source' : dir['source']
+                                        })
+                                      })
+                        
+                    data[lendata_minus:lendata] = data_sub_master_level1
+                  
+                  else :
+                    plus = [list(d.values())[5] for d in data[lendata_minus:lendata]]
+                    plus.append({
+                                'id': dir['id_first'],
+                                'name': dir['name'],
+                                'code' : dir['code'],
+                                'balance' : dir['balance'],
+                                'source' : dir['source']
+                                })
+                  
+                    for x in data[lendata_minus:lendata] :
+                        x['children'] = plus
+                      
+                        
+
+            id_menu = dir['id_first']
+                      
+                      
+                      
+                      
+#  //////////////////////////////////// masukan level 2 ===== parentnya sales,cogs dll
+          elif dir['level'] == 2 :
+            if id_submenu != dir['id_first'] :
               if data_master == [] :
-              
                 data_master = []
-                for x in data[lendata_minus:lendata] :
-                    data_master.append({
-                                  "id" : x['id'],
-                                  "name" : x['name'],
-                                  'code' : dir['code'],
-                                  'source' : x['source'],
-                                  "balance" : balance_master,
-                                  "children" : children
-                                  })
-                    # balance_masterdir['balance'] = 0
-                data[lendata_minus:lendata] = data_master
+                if dir['balance'] == 0 :
+                  for x in data[lendata_minus:lendata] :
+                      data_master.append({
+                                    'id' : x['id'],
+                                    'name' : x['name'],
+                                    'code' : x['code'],
+                                    'source' : x['source'],
+                                    'balance' : x['balance'],
+                                    'children' : ({
+                                          'id' : dir['id_first'],
+                                          'name' : dir['parent_name'],
+                                          'code' : dir['code'],
+                                          'source' : dir['source'],
+                                          'balance' : dir['balance'],
+                                      })
+                                    })
+                      
+                      data[lendata_minus:lendata] = data_master
+                
               else :
                 plus = [list(d.values())[5] for d in data[lendata_minus:lendata]]
-                plus.append(children)
+                plus.append({
+                                'id' : dir['id_first'],
+                                'name' : dir['parent_name'],
+                                'code' : dir['code'],
+                                'source' : dir['source'],
+                                'balance' : dir['balance'],
+                            })
               
                 for x in data[lendata_minus:lendata] :
                     x['children'] = plus
-                    x['balance'] = x['balance'] + balance_master
-                    
-                    if x['code'] == 'sale' :
-                      balance_sale = x['balance'] + balance_master
-                    elif x['code'] == 'HPP' :
-                      balance_cogs = x['balance'] + balance_master
-                    elif x['code'] == 'ADM' :
-                      balance_adm = x['balance'] + balance_master
-                    elif x['code'] == 'OTHER':
-                      balance_other = x['balance'] + balance_master
-                    else :
-                      balance = x['balance']
-                    
+            
+            else :
+              # ////////////////////////masukan yang ada akunnya
+              if data_sub_master == [] :
+                data_sub_master = []
+                if dir['balance'] != 0 :
+                  for x in data[lendata_minus:lendata] :
+                      data_sub_master.append({
+                                    'id' : x['id'],
+                                    'name' : x['name'],
+                                    'code' : x['code'],
+                                    'source' : x['source'],
+                                    'balance' : x['balance'],
+                                    'children' : ({
+                                          'id' : x['children']['id'],
+                                          'name' : x['children']['name'],
+                                          'code' : x['children']['code'],
+                                          'source' : x['children']['source'],
+                                          'balance' : x['children']['balance'],
+                                          'children' : ({
+                                              'id' : dir['id_first'],
+                                              'name' : dir['name'],
+                                              'code' : dir['code'],
+                                              'source' : dir['source'],
+                                              'balance' : dir['balance'],
+                                          })
+                                          
+                                      })
+                                    })
+                      
+                      data[lendata_minus:lendata] = data_sub_master
                 
+              else :
+                if dir['balance'] != 0 and id_submenu == dir['id_first']:
+                  plus = [list(d.values())[5] for d in data[lendata_minus:lendata]]
+                  plus_sub = [list(z.values())[5] for z in plus]
+                  plus_sub.append({
+                                  'id' : dir['id'],
+                                  'name' : dir['name'],
+                                  'code' : dir['code'],
+                                  'source' : dir['source'],
+                                  'balance' : dir['balance'],
+                              })
+                  for x in data[lendata_minus:lendata] :
+                      x['children']['children'] = plus_sub
+            
+            
+              
+            id_submenu = dir['id_first']
+            plus = []
+            
           
-          
+            
         return simplejson.dumps(data)
 
 
             
+
+          # children = ({
+          #   'id': dir['id_first'],
+          #   'name': dir['name'],
+          #   'balance' : dir['balance']
+          # })
+          
+          # if id_first != dir['id_first'] :
+          #   balance_first = dir['balance'] == 0
+          #   if dir['code'] == "GROSS" :
+          #     balance_gross = balance_sale - balance_cogs
+          #     balance = balance_sale - balance_cogs
+          #   elif dir['code'] == "NP" :
+          #     balance = balance_gross - balance_adm + balance_other
+          #   else :
+          #     balance = dir['balance']
+                
+          #   if balance_first :
+              
+          #     data.append({
+          #       'id': dir['id_first'],
+          #       'name': dir['parent_name'],
+          #       'code' : dir['code'],
+          #       'source' : dir['source'],
+          #       'balance' : balance
+          #     })
+          #     data_master = []
+          #   else :
+          #     data.append({
+          #       'id': dir['id_first'],
+          #       'name': dir['parent_name'],
+          #       'code' : dir['code'],
+          #       'source' : dir['source'],
+          #       'balance' : balance,
+          #       'children' : children
+          #     })
+          #   id_first = dir['id_first']
+              
+            
+          #   lendata_minus = len (data) -1
+          #   lendata = len(data)
+            
+          # elif id_first == dir['id_first'] and dir['balance'] != 0:
+          #   balance_master = dir['balance']
+          #   if balance_first :
+          #     if data_master == [] :
+              
+          #       data_master = []
+          #       for x in data[lendata_minus:lendata] :
+          #           data_master.append({
+          #                         "id" : x['id'],
+          #                         "name" : x['name'],
+          #                         'code' : dir['code'],
+          #                         'source' : x['source'],
+          #                         "balance" : balance_master,
+          #                         "children" : children
+          #                         })
+                    
+          #       data[lendata_minus:lendata] = data_master
+          #     else :
+          #       plus = [list(d.values())[5] for d in data[lendata_minus:lendata]]
+          #       plus.append(children)
+              
+          #       for x in data[lendata_minus:lendata] :
+          #           x['children'] = plus
+          #           x['balance'] = x['balance'] + balance_master
+                    
+          #           if x['code'] == 'sale' :
+          #             balance_sale = x['balance'] + balance_master
+          #           elif x['code'] == 'HPP' :
+          #             balance_cogs = x['balance'] + balance_master
+          #           elif x['code'] == 'ADM' :
+          #             balance_adm = x['balance'] + balance_master
+          #           elif x['code'] == 'OTHER':
+          #             balance_other = x['balance'] + balance_master
+          #           else :
+          #             balance = x['balance']
